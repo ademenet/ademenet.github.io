@@ -5,9 +5,6 @@
 # Ignore the Hugo cache directory
 /.cache/
 
-# Ignore the public folder, since it can be regenerated
-!/public/
-
 # Ignore files and directories that should not be included in the repository
 .DS_Store
 Thumbs.db
