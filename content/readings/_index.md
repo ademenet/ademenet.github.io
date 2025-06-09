@@ -1,7 +1,7 @@
-+++
-title = "Lectures"
-menu = "main"
-+++
+---
+title: "Lectures"
+menu: "main"
+---
 
 # Mes lectures
 
