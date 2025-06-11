@@ -4,7 +4,7 @@ author: "Alain Demenet"
 slug: "mount-s3-on-windows"
 date: "2023-03-22"
 tags:
-  - til
+  - TIL
 ---
 
 ## Setting up everything
