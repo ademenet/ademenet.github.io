@@ -1,0 +1,21 @@
+{{ define "main" }}
+<content>
+  <h2>All Microposts</h2>
+  <div>
+    {{ range .Pages }}
+    <article>
+      <header>
+        <time datetime='{{ .Date.Format "2006-01-02 15:04" }}'>
+          {{ .Date.Format "2006-01-02 15:04" }}
+        </time>
+      </header>
+      <div class="content" style="font-size: 0.9em;">
+        {{ .Content }}
+      </div>
+    </article>
+    {{ else }}
+    <p>No microposts yet</p>
+    {{ end }}
+  </div>
+</content>
+{{ end }}

@@ -1,0 +1,57 @@
+{{ define "main" }}
+<content>
+  <!-- Blog Posts Section -->
+  <h2>Latest Blog Posts</h2>
+  <ul class="blog-posts">
+    {{ range first 5 (where .Site.RegularPages "Section" "blog") }}
+    <li>
+      <span>
+        <i>
+          <time datetime='{{ .Date.Format "2006-01-02" }}'>
+            {{ .Date.Format (default "02 Jan, 2006" .Site.Params.dateFormat) }}
+          </time>
+        </i>
+      </span>
+      <a href="{{ .Permalink }}">{{ .Title }}</a>
+    </li>
+    {{ else }}
+    <li>
+      No posts yet
+    </li>
+    {{ end }}
+  </ul>
+
+  <!-- Microposts Section -->
+  <h2>Latest Microposts</h2>
+  <div>
+    {{ range first 5 (where .Site.RegularPages "Section" "microposts") }}
+    <article>
+      <header>
+        <time datetime='{{ .Date.Format "2006-01-02 15:04" }}'>
+          {{ .Date.Format "2006-01-02 15:04" }}
+        </time>
+      </header>
+      <div class="content" style="font-size: 0.9em;">
+        {{ .Content }}
+      </div>
+    </article>
+    {{ else }}
+    <p>No microposts yet</p>
+    {{ end }}
+  </div>
+
+  <!-- Microposts Link -->
+  <div style="margin-top: 1em; text-align: right;">
+    <a href="{{ "microposts" | relURL }}" class="microposts-link">View all microposts →</a>
+  </div>
+
+  <!-- Tags Section -->
+  <small>
+    <div>
+      {{ range .Site.Taxonomies.tags }}
+      <a href="{{ .Page.Permalink }}">#{{ .Page.Title }}</a>&nbsp;
+      {{ end }}
+    </div>
+  </small>
+</content>
+{{ end }}
