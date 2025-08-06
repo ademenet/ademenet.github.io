@@ -8,11 +8,13 @@ theme = 'hugo-bearblog'
 # Basic metadata configuration for your blog.
 title = "Yet another developer blog"
 author = "Alain Demenet"
-copyright = "Copyright © 2020, Alain Demenet."
 languageCode = "fr-FR"
 
 # Generate a nice robots.txt for SEO
 enableRobotsTXT = true
+
+# Enable Git integration for tracking article modifications
+enableGitInfo = true
 
 # Generate "Bearblog"-like URLs !only!, see https://bearblog.dev/.
 disableKinds = ["taxonomy"]
@@ -20,6 +22,10 @@ ignoreErrors = ["error-disable-taxonomy"]
 [permalinks]
   blog = "/:slug/"
   tags = "/blog/:slug"
+
+# Configure frontmatter date handling
+[frontmatter]
+  lastmod = ["lastmod", ":git", "date", "publishDate"]
 
 [params]
   # The "description" of your website. This is used in the meta data of your generated html.
@@ -41,7 +47,7 @@ ignoreErrors = ["error-disable-taxonomy"]
   title = "ademenet.github.io"
 
   # This theme will, by default, inject a made-with-line at the bottom of the page.
-  # You can turn it off, but we would really appreciate if you don’t :-).
+  # You can turn it off, but we would really appreciate if you don't :-).
   # hideMadeWithLine = true
 
   # By default, this theme displays dates with a format like "02 Jan, 2006", but

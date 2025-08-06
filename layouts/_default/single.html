@@ -1,0 +1,38 @@
+{{ define "main" }} {{ if eq .Type "blog" }}{{ if not .Params.menu }}
+<h1>{{ .Title }}</h1>
+<p>
+  <i>
+    <time datetime='{{ .Date.Format "2006-01-02" }}'>
+      {{ .Date.Format (default "02 Jan, 2006" .Site.Params.dateFormat) }}
+    </time>
+    {{ if and .GitInfo (ne (.Date.Format "2006-01-02") (.Lastmod.Format
+    "2006-01-02")) }}
+    <br />
+    <small style="color: #666">
+      Édité: {{ .Lastmod.Format "2006-01-02 15:04" }}
+    </small>
+    {{ end }}
+  </i>
+</p>
+{{ end }}{{ end }}
+<content> {{ .Content }} </content>
+
+{{ if and .GitInfo (ne (.Date.Format "2006-01-02") (.Lastmod.Format
+"2006-01-02")) }}
+<div style="margin-top: 1.5em; padding: 0.5em 0; border-top: 1px dashed; font-size: 0.85em; color: var(--text-color); opacity: 0.7;">
+  <small>
+    <strong>Édité:</strong> {{ .Lastmod.Format "2006-01-02 15:04" }}
+    {{ with .GitInfo }}
+      {{ if .Subject }}<br><em>{{ .Subject }}</em>{{ end }}
+      {{ if .Body }}<br>{{ .Body | markdownify }}{{ end }}
+    {{ end }}
+  </small>
+</div>
+{{ end }}
+
+<p>
+  {{ range (.GetTerms "tags") }}
+  <a href="{{ .Permalink }}">#{{ .LinkTitle }}</a>
+  {{ end }}
+</p>
+{{ end }}
