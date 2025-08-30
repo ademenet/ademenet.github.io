@@ -1,0 +1,39 @@
+{{ define "main" }}
+<content>
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+  
+  <ul class="blog-posts">
+    {{ range .Pages.ByDate.Reverse }}
+    <li>
+      <span>
+        <i>
+          <time datetime='{{ .Date.Format "2006-01-02" }}'>
+            {{ .Date.Format (default "02 Jan, 2006" .Site.Params.dateFormat) }}
+          </time>
+        </i>
+      </span>
+      <a href="{{ .Permalink }}">{{ .Title }}</a>
+      {{ if .Params.rating }}
+      <span class="rating">
+        {{ range seq .Params.rating }}★{{ end }}{{ range seq (sub 5 .Params.rating) }}☆{{ end }}
+      </span>
+      {{ end }}
+    </li>
+    {{ else }}
+    <li>
+      No readings yet
+    </li>
+    {{ end }}
+  </ul>
+</content>
+
+<style>
+    .rating {
+        display: inline-block;
+        margin-left: 0.5em;
+        font-size: 0.9em;
+        color: #f90;
+    }
+</style>
+{{ end }}
