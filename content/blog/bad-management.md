@@ -2,7 +2,7 @@
 author: "Alain Demenet"
 title: "Thoughts on bad management"
 slug: "thoughts-on-bad-management"
-date: "2023-09-09"
+date: "2025-09-09"
 ---
 
 I just read this quick [blog](https://canro91.github.io/2025/09/09/RushingToCode/) where the author shares his tips to avoid missing the mark when working on a ticket.
