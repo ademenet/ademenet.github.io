@@ -1,0 +1,14 @@
+name: Micropost
+description: Publish a short micropost to the site
+labels: [micropost]
+body:
+  - type: textarea
+    id: text
+    attributes:
+      label: Text
+      description: Write your micropost content (Markdown supported)
+      placeholder: Today I learned...
+    validations:
+      required: false
+
+
