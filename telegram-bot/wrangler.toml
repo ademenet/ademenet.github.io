@@ -1,0 +1,9 @@
+name = "telegram-micropost-bot"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Secrets (set via `wrangler secret put`):
+# - TELEGRAM_BOT_TOKEN
+# - TELEGRAM_WEBHOOK_SECRET
+# - GITHUB_TOKEN
+# - ALLOWED_USER_ID

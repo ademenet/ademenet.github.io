@@ -15,3 +15,5 @@ bower_components/
 .idea/
 .vscode/
 .obsidian/
+
+*/.env  
