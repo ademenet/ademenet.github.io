@@ -7,3 +7,7 @@ compatibility_date = "2025-01-01"
 # - TELEGRAM_WEBHOOK_SECRET
 # - GITHUB_TOKEN
 # - ALLOWED_USER_ID
+
+[[kv_namespaces]]
+binding = "PENDING_POSTS"
+id = "797a4bf0dbb94d5aa3edfc75dbc1db3e"

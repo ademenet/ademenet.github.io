@@ -16,6 +16,13 @@ export default {
     }
 
     const update = await request.json();
+
+    // Handle callback queries (confirmation buttons)
+    if (update.callback_query) {
+      await handleCallbackQuery(update.callback_query, env);
+      return new Response("OK");
+    }
+
     const message = update.message;
 
     if (!message || !message.text) {
@@ -28,17 +35,31 @@ export default {
     }
 
     try {
-      const now = new Date();
-      const filename = formatFilename(now);
-      const frontmatterDate = formatFrontmatterDate(now);
-      const content = buildMicropost(frontmatterDate, message.text);
-      const filePath = `${MICROPOSTS_PATH}/${filename}.md`;
+      const chatId = message.chat.id;
+      const text = message.text;
 
-      await createGitHubFile(env.GITHUB_TOKEN, filePath, content, filename);
+      // Store pending post in KV
+      await env.PENDING_POSTS.put(`pending:${chatId}`, text, {
+        expirationTtl: 300, // 5 minutes
+      });
+
+      // Send preview with confirmation buttons
+      const preview =
+        text.length > 200 ? text.substring(0, 200) + "..." : text;
       await sendTelegramMessage(
         env.TELEGRAM_BOT_TOKEN,
-        message.chat.id,
-        `Micropost published.`
+        chatId,
+        `📝 Micropost preview:\n\n${preview}`,
+        {
+          reply_markup: {
+            inline_keyboard: [
+              [
+                { text: "✅ Publish", callback_data: "confirm" },
+                { text: "❌ Cancel", callback_data: "cancel" },
+              ],
+            ],
+          },
+        }
       );
     } catch (error) {
       await sendTelegramMessage(
@@ -51,6 +72,65 @@ export default {
     return new Response("OK");
   },
 };
+
+async function handleCallbackQuery(callbackQuery, env) {
+  const chatId = callbackQuery.message.chat.id;
+  const messageId = callbackQuery.message.message_id;
+  const action = callbackQuery.data;
+
+  // Verify sender identity
+  if (String(callbackQuery.from.id) !== String(env.ALLOWED_USER_ID)) {
+    return;
+  }
+
+  if (action === "confirm") {
+    const text = await env.PENDING_POSTS.get(`pending:${chatId}`);
+
+    if (!text) {
+      await answerCallbackQuery(
+        env.TELEGRAM_BOT_TOKEN,
+        callbackQuery.id,
+        "Post expired. Send it again."
+      );
+      return;
+    }
+
+    try {
+      const now = new Date();
+      const filename = formatFilename(now);
+      const frontmatterDate = formatFrontmatterDate(now);
+      const content = buildMicropost(frontmatterDate, text);
+      const filePath = `${MICROPOSTS_PATH}/${filename}.md`;
+
+      await createGitHubFile(env.GITHUB_TOKEN, filePath, content, filename);
+      await env.PENDING_POSTS.delete(`pending:${chatId}`);
+
+      await editTelegramMessage(
+        env.TELEGRAM_BOT_TOKEN,
+        chatId,
+        messageId,
+        `✅ Micropost published.`
+      );
+    } catch (error) {
+      await editTelegramMessage(
+        env.TELEGRAM_BOT_TOKEN,
+        chatId,
+        messageId,
+        `Error: ${error.message}`
+      );
+    }
+  } else if (action === "cancel") {
+    await env.PENDING_POSTS.delete(`pending:${chatId}`);
+    await editTelegramMessage(
+      env.TELEGRAM_BOT_TOKEN,
+      chatId,
+      messageId,
+      `❌ Micropost cancelled.`
+    );
+  }
+
+  await answerCallbackQuery(env.TELEGRAM_BOT_TOKEN, callbackQuery.id);
+}
 
 // Format: YYYY-MM-DD-HH-MM
 function formatFilename(date) {
@@ -119,11 +199,32 @@ async function createGitHubFile(token, path, content, filename) {
   }
 }
 
-async function sendTelegramMessage(botToken, chatId, text) {
+async function sendTelegramMessage(botToken, chatId, text, extra = {}) {
   const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
   await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text }),
+    body: JSON.stringify({ chat_id: chatId, text, ...extra }),
+  });
+}
+
+async function editTelegramMessage(botToken, chatId, messageId, text) {
+  const url = `https://api.telegram.org/bot${botToken}/editMessageText`;
+  await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, message_id: messageId, text }),
+  });
+}
+
+async function answerCallbackQuery(botToken, callbackQueryId, text = "") {
+  const url = `https://api.telegram.org/bot${botToken}/answerCallbackQuery`;
+  await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      callback_query_id: callbackQueryId,
+      ...(text && { text, show_alert: true }),
+    }),
   });
 }
