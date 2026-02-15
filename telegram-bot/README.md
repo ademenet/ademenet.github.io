@@ -1,12 +1,14 @@
 # Telegram Micropost Bot
 
-A Cloudflare Worker that receives Telegram messages and publishes them as microposts on the Hugo blog.
+A Cloudflare Worker that receives Telegram messages and publishes them as microposts on the Hugo blog, with a confirmation step before publishing.
 
 ## Architecture
 
 ```
-Telegram message → Cloudflare Worker (webhook) → GitHub API (file creation) → Push to master → GitHub Actions → Hugo deploy
+Telegram message → Cloudflare Worker → Preview + Confirm/Cancel buttons → GitHub API (file creation) → Push to master → GitHub Actions → Hugo deploy
 ```
+
+Pending posts are stored in Cloudflare KV with a 5-minute TTL.
 
 ## Prerequisites
 
@@ -36,7 +38,16 @@ Telegram message → Cloudflare Worker (webhook) → GitHub API (file creation) 
 5. Under **Permissions > Repository permissions**, set **Contents** to **Read and write**
 6. Generate and copy the token
 
-### 4. Configure secrets
+### 4. Create a KV namespace
+
+```sh
+cd telegram-bot
+wrangler kv namespace create PENDING_POSTS
+```
+
+Copy the returned namespace ID and update the `id` field in `wrangler.toml` under `[[kv_namespaces]]`.
+
+### 5. Configure secrets
 
 ```sh
 cd telegram-bot
@@ -47,7 +58,7 @@ wrangler secret put GITHUB_TOKEN
 wrangler secret put ALLOWED_USER_ID
 ```
 
-### 5. Deploy the Worker
+### 6. Deploy the Worker
 
 ```sh
 wrangler deploy
@@ -55,7 +66,7 @@ wrangler deploy
 
 Note the deployed URL (e.g., `https://telegram-micropost-bot.<your-subdomain>.workers.dev`).
 
-### 6. Register the Telegram webhook
+### 7. Register the Telegram webhook
 
 Replace `<BOT_TOKEN>`, `<WORKER_URL>`, and `<WEBHOOK_SECRET>` with your values:
 
@@ -70,13 +81,13 @@ curl -X POST "https://api.telegram.org/bot<BOT_TOKEN>/setWebhook" \
 
 You should get `{"ok":true,"result":true,"description":"Webhook was set"}`.
 
-### 7. Test
+### 8. Test
 
 Send a message to your bot on Telegram. It should:
 
-1. Reply with "Micropost published."
-2. Create a new file in `content/microposts/` on GitHub
-3. Trigger the Hugo deployment workflow
+1. Reply with a preview and two buttons: **Publish** / **Cancel**
+2. On **Publish**: create a new file in `content/microposts/` on GitHub and trigger the Hugo deployment workflow
+3. On **Cancel**: discard the post
 
 ## Local development
 
